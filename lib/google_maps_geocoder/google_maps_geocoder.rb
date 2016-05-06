@@ -2,7 +2,7 @@ require 'active_support'
 require 'active_support/core_ext/string/inflections'
 require 'logger'
 require 'net/http'
-require 'rack'
+require 'uri'
 
 # A simple PORO wrapper for geocoding with Google Maps.
 #
@@ -77,8 +77,8 @@ class GoogleMapsGeocoder
   #   address
   # @example
   #   chez_barack = GoogleMapsGeocoder.new '1600 Pennsylvania Ave'
-  def initialize(data)
-    @json = data.is_a?(String) ? json_from_url(data) : data
+  def initialize(data, options = {})
+    @json = data.is_a?(String) ? json_from_url(data, options) : data
     handle_error if @json.blank? || @json['status'] != 'OK'
     set_attributes_from_json
     logger.info('GoogleMapsGeocoder') do
@@ -113,8 +113,7 @@ class GoogleMapsGeocoder
   private
 
   def api_key
-    @api_key ||= "&key=#{ENV['GOOGLE_MAPS_API_KEY']}" if
-      ENV['GOOGLE_MAPS_API_KEY']
+    @api_key ||= ENV['GOOGLE_MAPS_API_KEY'] if ENV['GOOGLE_MAPS_API_KEY']
   end
 
   def http(uri)
@@ -124,8 +123,8 @@ class GoogleMapsGeocoder
     http
   end
 
-  def json_from_url(url)
-    uri = URI.parse query_url(url)
+  def json_from_url(address, options)
+    uri = URI.parse query_url(address, options)
 
     logger.debug('GoogleMapsGeocoder') { uri }
 
@@ -200,9 +199,9 @@ class GoogleMapsGeocoder
     parse_address_component_type('administrative_area_level_1', 'short_name')
   end
 
-  def query_url(query)
-    "#{GOOGLE_API_URI}?address=#{Rack::Utils.escape query}&sensor=false"\
-    "#{api_key}"
+  def query_url(query, options = {})
+    params = options.merge(address: query, key: api_key).select { |_, value| !value.nil? }
+    "#{GOOGLE_API_URI}?#{URI.encode_www_form(params)}"
   end
 
   def set_attributes_from_json

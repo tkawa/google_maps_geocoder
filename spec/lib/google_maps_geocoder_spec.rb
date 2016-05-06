@@ -76,8 +76,7 @@ describe GoogleMapsGeocoder do
 
     it do
       expect(subject.send(:query_url, nil)).to eq(
-        'https://maps.googleapis.com/maps/api/geocode/json?address='\
-        '&sensor=false&key=INVALID_KEY'
+        'https://maps.googleapis.com/maps/api/geocode/json?key=INVALID_KEY'
       )
     end
   end
