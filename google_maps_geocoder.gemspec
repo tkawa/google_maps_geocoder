@@ -16,7 +16,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rubocop', '>= 0'
 
   s.add_runtime_dependency 'activesupport', '>= 0'
-  s.add_runtime_dependency 'rack', '>= 0'
 
   s.files       = `git ls-files`.split "\n"
   s.test_files  = `git ls-files -- {test,spec,features}/*`.split "\n"
